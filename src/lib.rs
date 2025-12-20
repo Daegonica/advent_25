@@ -191,32 +191,40 @@ impl Advent {
         self.log.info(format!("Total Volts: {}", total));
     }
 
+    // Day 3 Part 2/2
     pub fn highest_volts_advanced(&mut self) {
-        let mut all_banks: Vec<u64> = Vec::new();
+        let mut all_banks: Vec<String> = Vec::new();
 
         for bank in &self.puzzle {
 
             let digits: Vec<u32> = bank.chars().map(|c| c.to_digit(10).unwrap()).collect();
+            let print = highest(&digits, 12);
+            self.log.info(format!("{print}"));
             all_banks.push(highest(&digits, 12));
             
         }
 
-        let total: u64 = all_banks.iter().sum();
+        let total: u64 = all_banks.iter().map(|n| n.parse::<u64>().unwrap()).sum();
         self.log.info(format!("{}", total));
     }
 }
 
 
-pub fn highest(digits: &[u32], count: usize) -> u64 {
+pub fn highest(digits: &[u32], count: usize) -> String {
+    let mut stack: Vec<u32> = Vec::with_capacity(count);
+    let mut to_remove = digits.len().saturating_sub(count);
 
-    // Need to make my own logic for returning the information
-    // Needs to be a sliding window effect.
-    // Default chunk is always count-1
-    // Need to find -all- top numbers in first window before looking in last chunk
-    // Once all top numbers in first window are found we can find all the top numbers in the default chunk
-    10
-    
+    for &digit in digits {
+        while to_remove > 0 && !stack.is_empty() && *stack.last().unwrap() < digit {
+            stack.pop();
+            to_remove -= 1;
+        }
+        stack.push(digit);
+    }
+    stack.truncate(count);
+    stack.iter().map(|d| d.to_string()).collect()
 }
+
 
 
 pub fn convert_puzzle_info(puzzle_info: &FileContent) -> Vec<String> {
