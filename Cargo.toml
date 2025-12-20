@@ -1,0 +1,10 @@
+[package]
+name = "advent_25"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+file_reader = { path = "../../toolbox/file_reader" }
+dlog = { path = "../../toolbox/dlog" }
+regex = "1.12.2"
+rayon = "1"
