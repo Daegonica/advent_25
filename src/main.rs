@@ -1,7 +1,7 @@
 use advent_25::Advent;
 
 fn main() {
-    let mut advent = Advent::new("4");
+    let mut advent = Advent::new("5");
 
     // * Day 1 *
     // advent.crack_safe();
@@ -15,6 +15,9 @@ fn main() {
     // advent.highest_volts_advanced();
 
     // * Day 4*
-    advent.carpet_rolls();
-    advent.remove_carpets();
+    // advent.carpet_rolls();
+    // advent.remove_carpets();
+
+    // * Day 5 *
+    advent.fresh_ingredients();
 }

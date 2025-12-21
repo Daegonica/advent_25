@@ -190,7 +190,6 @@ impl Advent {
         let total: u32 = all_banks.iter().sum();
         self.log.info(format!("Total Volts: {}", total));
     }
-
     // Day 3 Part 2/2
     pub fn highest_volts_advanced(&mut self) {
         let mut all_banks: Vec<String> = Vec::new();
@@ -241,7 +240,6 @@ impl Advent {
 
         self.log.info(format!("Take out {} carpets.", touch_carpet));
     }
-
     // Day 4 Part 2/2
     pub fn remove_carpets(&mut self) {
 
@@ -252,12 +250,11 @@ impl Advent {
                         (1, -1),  (1, 0),  (1, 1),];
 
         let mut removed_carpet = 0;
-        let mut removed = false;
         let mut run = true;
 
 
         while run {
-            removed = false;
+            let mut removed = false;
             for row in 0..grid.len() {
                 for col in 0..grid[row].len() {
                     if grid[row][col] == '@' {
@@ -288,6 +285,58 @@ impl Advent {
         self.log.info(format!("Removed: {}", removed_carpet));
 
     }
+
+    // Day 5 Part 1/2
+    pub fn fresh_ingredients(&mut self) {
+        let re = Regex::new(r"(\d+)-(\d+)").unwrap();
+        let mut date_ranges: Vec<(usize, usize)> = Vec::new();
+        let mut ingredient_dates: Vec<usize> = Vec::new();
+
+        for line in &self.puzzle {
+
+            if re.is_match(line) {
+                for caps in re.captures_iter(line) {
+                    let start = caps.get(1).unwrap().as_str().parse::<usize>().unwrap();
+                    let end = caps.get(2).unwrap().as_str().parse::<usize>().unwrap();
+                    date_ranges.push((start, end));
+                }
+                
+            } else if line != "" {
+                ingredient_dates.push(line.parse::<usize>().unwrap());
+            }
+        }
+
+        let mut fresh_count = 0;
+        let mut fresh_ingredients: Vec<usize> = Vec::new();
+        for (start, end) in &date_ranges {
+            for i in &ingredient_dates {
+                if i >= start && i <= end && !fresh_ingredients.contains(i) {
+                    fresh_ingredients.push(*i);
+                    fresh_count += 1;
+                }
+            }
+        }
+
+        date_ranges.sort_by_key(|&(s, _)| s);
+
+        let mut merged: Vec<(u64, u64)> = Vec::new();
+        for (start, end) in date_ranges {
+            if let (last_start, last_end) = merged.last_mut() {
+                if start <= *last_end + 1 {
+                    *last_end = (*last_end).max(end);
+                } else {
+                    merged.push((start, end));
+                }
+            } else {
+                merged.push((start, end));
+            }
+        }
+
+        let total_fresh_dates: u64 = merged.iter().map(|(s, e)| e - s + 1).sum();
+
+        self.log.info(format!("Fresh Ingredients: {}", fresh_count));
+    }
+
 }
 
 
