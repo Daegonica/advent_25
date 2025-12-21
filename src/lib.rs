@@ -207,6 +207,87 @@ impl Advent {
         let total: u64 = all_banks.iter().map(|n| n.parse::<u64>().unwrap()).sum();
         self.log.info(format!("{}", total));
     }
+
+    // Day 4 Part 1/2
+    pub fn carpet_rolls(&mut self) {
+
+        let grid: Vec<Vec<char>> = self.puzzle.iter().map(|line| line.chars().collect()).collect();
+
+        let adjacent = [(-1, -1), (-1, 0), (-1, 1),
+                        (0, -1),           (0, 1),
+                        (1, -1),  (1, 0),  (1, 1),];
+
+        let mut touch_carpet = 0;
+
+        for row in 0..grid.len() {
+            for col in 0..grid[row].len() {
+                if grid[row][col] == '@' {
+                    let mut count = 0;
+                    for (dr, dc) in adjacent.iter() {
+                        let nr = row as isize + dr;
+                        let nc = col as isize + dc;
+                        if nr >= 0 && nr < grid.len() as isize && nc >=0 && nc < grid[row].len() as isize {
+                            if grid[nr as usize][nc as usize] == '@' {
+                                count += 1;
+                            }
+                        }
+                    }
+                    if count < 4 {
+                        touch_carpet += 1;
+                    }
+                }
+            }
+        }
+
+        self.log.info(format!("Take out {} carpets.", touch_carpet));
+    }
+
+    // Day 4 Part 2/2
+    pub fn remove_carpets(&mut self) {
+
+        let mut grid: Vec<Vec<char>> = self.puzzle.iter().map(|line| line.chars().collect()).collect();
+
+        let adjacent = [(-1, -1), (-1, 0), (-1, 1),
+                        (0, -1),           (0, 1),
+                        (1, -1),  (1, 0),  (1, 1),];
+
+        let mut removed_carpet = 0;
+        let mut removed = false;
+        let mut run = true;
+
+
+        while run {
+            removed = false;
+            for row in 0..grid.len() {
+                for col in 0..grid[row].len() {
+                    if grid[row][col] == '@' {
+                        let mut count = 0;
+                        for (dr, dc) in adjacent.iter() {
+                            let nr = row as isize + dr;
+                            let nc = col as isize + dc;
+                            if nr >= 0 && nr < grid.len() as isize && nc >=0 && nc < grid[row].len() as isize {
+                                if grid[nr as usize][nc as usize] == '@' {
+                                    count += 1;
+                                }
+                            }
+                        }
+                        if count < 4 {
+                            grid[row][col] = '.';
+                            removed_carpet += 1;
+                            removed = true;
+                        }
+                    }
+                }
+            }
+
+            if removed == false {
+                run = false;
+            }
+        }
+
+        self.log.info(format!("Removed: {}", removed_carpet));
+
+    }
 }
 
 
@@ -224,8 +305,6 @@ pub fn highest(digits: &[u32], count: usize) -> String {
     stack.truncate(count);
     stack.iter().map(|d| d.to_string()).collect()
 }
-
-
 
 pub fn convert_puzzle_info(puzzle_info: &FileContent) -> Vec<String> {
     puzzle_info.as_lines().unwrap().to_vec()
