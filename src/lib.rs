@@ -286,61 +286,122 @@ impl Advent {
 
     }
 
-    // Day 5 Part 1/2
+    // Day 5 Part 2/2
+    // I implemented part 1/2 along the way so only part 2/2 is here
     pub fn fresh_ingredients(&mut self) {
         let re = Regex::new(r"(\d+)-(\d+)").unwrap();
         let mut date_ranges: Vec<(usize, usize)> = Vec::new();
-        let mut ingredient_dates: Vec<usize> = Vec::new();
 
         for line in &self.puzzle {
-
             if re.is_match(line) {
+
+                let mut start: usize = 0;
+                let mut finish: usize = 0;
+
                 for caps in re.captures_iter(line) {
-                    let start = caps.get(1).unwrap().as_str().parse::<usize>().unwrap();
-                    let end = caps.get(2).unwrap().as_str().parse::<usize>().unwrap();
-                    date_ranges.push((start, end));
+                    start = caps.get(1).unwrap().as_str().parse().unwrap();
+                    finish = caps.get(2).unwrap().as_str().parse().unwrap();
                 }
-                
-            } else if line != "" {
-                ingredient_dates.push(line.parse::<usize>().unwrap());
-            }
-        }
 
-        let mut fresh_count = 0;
-        let mut fresh_ingredients: Vec<usize> = Vec::new();
-        for (start, end) in &date_ranges {
-            for i in &ingredient_dates {
-                if i >= start && i <= end && !fresh_ingredients.contains(i) {
-                    fresh_ingredients.push(*i);
-                    fresh_count += 1;
+
+                if !date_ranges.contains(&(start, finish)) {
+                    date_ranges.push((start, finish));
                 }
             }
         }
 
-        date_ranges.sort_by_key(|&(s, _)| s);
+        date_ranges = sort_vec_highest(&mut date_ranges);
+        let fresh_count = place_holder(&mut date_ranges);
 
-        let mut merged: Vec<(u64, u64)> = Vec::new();
-        for (start, end) in date_ranges {
-            if let (last_start, last_end) = merged.last_mut() {
-                if start <= *last_end + 1 {
-                    *last_end = (*last_end).max(end);
-                } else {
-                    merged.push((start, end));
-                }
-            } else {
-                merged.push((start, end));
-            }
-        }
-
-        let total_fresh_dates: u64 = merged.iter().map(|(s, e)| e - s + 1).sum();
-
-        self.log.info(format!("Fresh Ingredients: {}", fresh_count));
+        self.log.info(format!("Date Ranges: {:#?}", date_ranges));
+        self.log.info(format!("All dates: {}", fresh_count));
     }
 
+    // Day 6 Part 1/2
+    pub fn c_math(&mut self) {
+        let mut equations: Vec<Vec<u64>> = Vec::new();
+        let mut math_symbols: Vec<char> = Vec::new();
+        let re = Regex::new(r"(\d+)").unwrap();
+
+        for line in &self.puzzle {
+            if re.is_match(line) {
+
+                let mut line_digits: Vec<u64> = Vec::new();
+
+                for caps in re.captures_iter(line) {
+                    let num: u64 = caps.get(1).unwrap().as_str().parse().unwrap();
+                    line_digits.push(num);
+                }
+                equations.push(line_digits);
+            } else {
+                for c in line.chars() {
+                    if c == '+' || c == '-' || c == '*' || c == '/' {
+                        math_symbols.push(c);
+                    }
+                }
+            }
+        }
+        if equations.is_empty() { return; }
+        let num_cols = equations[0].len();
+        let mut results = 0;
+        
+        for col in 0..num_cols {
+            let op = math_symbols.get(col).copied().unwrap_or('+'); // default to '+' if missing
+            let mut iter = equations.iter().map(|row| row[col]);
+            let mut result = iter.next().unwrap();
+        
+            for value in iter {
+                result = match op {
+                    '+' => result + value,
+                    '-' => result - value,
+                    '*' => result * value,
+                    '/' => result / value,
+                    _ => panic!("Unknown operator"),
+                };
+            }
+            results += result;
+        }
+        self.log.info(format!("Total result: {}", results));
+    }
+
+    pub fn c_math_advanced(&mut self) {
+        
+        for line in &self.puzzle {
+            let mut char_count = 0;
+            // Right-left column math
+            for c in line.chars() {
+                char_count += 1;
+            }
+            self.log.info(format!("Total chars: {}", char_count));
+        }
+
+    }
+}
+
+fn sort_vec_highest(vec: &mut Vec<(usize, usize)>) -> Vec<(usize, usize)> {
+    // Take in Vec<(usize, usize)> and sort by highest first value
+    vec.sort_by(|a, b| a.0.cmp(&b.0));
+    vec.to_vec()
+}
+
+fn place_holder(vec: &mut Vec<(usize, usize)>) -> usize {
+    // Take in Vec<(usize, usize)> and count all digits that don't overlap
+    let mut count = 0;
+    let mut current_end = 0;
+    for &(start, end) in vec.iter() {
+        if start > current_end {
+            count += end - start + 1;
+            current_end = end;
+        } else if end > current_end {
+            count += end - current_end;
+            current_end = end;
+        }
+    }
+    count
 }
 
 
-pub fn highest(digits: &[u32], count: usize) -> String {
+fn highest(digits: &[u32], count: usize) -> String {
     let mut stack: Vec<u32> = Vec::with_capacity(count);
     let mut to_remove = digits.len().saturating_sub(count);
 
@@ -355,11 +416,11 @@ pub fn highest(digits: &[u32], count: usize) -> String {
     stack.iter().map(|d| d.to_string()).collect()
 }
 
-pub fn convert_puzzle_info(puzzle_info: &FileContent) -> Vec<String> {
+fn convert_puzzle_info(puzzle_info: &FileContent) -> Vec<String> {
     puzzle_info.as_lines().unwrap().to_vec()
 }
 
-pub fn has_repeated_sequence<T: ToString>(input: T) -> bool {
+fn has_repeated_sequence<T: ToString>(input: T) -> bool {
 
     let s = input.to_string();
     let len = s.len();
@@ -382,7 +443,7 @@ pub fn has_repeated_sequence<T: ToString>(input: T) -> bool {
     false
 }
 
-pub fn equal_halfs<T: ToString>(input: T) -> bool {
+fn equal_halfs<T: ToString>(input: T) -> bool {
     let s = input.to_string();
     let len = s.len();
     if len % 2 != 0 {
